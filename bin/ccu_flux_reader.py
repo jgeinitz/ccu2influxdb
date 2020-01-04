@@ -7,8 +7,12 @@ import pycurl
 from mysql.connector import errorcode
 
 debugging = 0
+debugtext = ""
+debugtime = ''
 
 class send_to_influxdb:
+    global debugtext
+    global debugtime
     connection=""
     def __init__(self):
         self.connection = pycurl.Curl()
@@ -19,7 +23,8 @@ class send_to_influxdb:
             self.connection.setopt(self.connection.POSTFIELDS, str(string))
             self.connection.perform()
         else:
-            print(string)
+            print(string + "\n>>" +
+                  debugtext + "- " + debugtime)
 
 
 
@@ -51,6 +56,8 @@ class worker():
         self.c = send_to_influxdb()
     
     def getDatapoint(self,device_id,channel_id):
+        global debugtime
+        dtim=0
         returnstring=""
         cursor = self.dbh.cursor()
         q=("SELECT lower(datapoint.type) as dataname,"+
@@ -62,13 +69,13 @@ class worker():
                 " AND channel.channel_id = ise.channel_id"+
                 " AND device.device_id = ise.device_id"+
                 " AND device.device_id = %(d)s"+
-                " AND channel.channel_id = %(c)s"+
-                " ORDER BY datapoint.timestamp DESC")
+                " AND channel.channel_id = %(c)s "+
+                "ORDER BY datapoint.timestamp ASC")
         cursor.execute(q, { 'd': device_id, 'c': channel_id })
         datadict= cursor.fetchall()
         cursor.close()
         tz=time.timezone
-        tm=int(time.time())
+        tm=int(time.time() - tz)
         #tm=0
         for ( dataname, dataval, vt, tim ) in datadict:
             if dataval != "" and dataname != "" and vt != 20 and dataname != 'ip' and dataname != 'info':
@@ -76,13 +83,15 @@ class worker():
                     dataval=0
                 if dataval == "true":
                     dataval=1
-                if tim > 20000: # got a time gt zero
-                    if tim > (tz - 604800): # got no value in the last week
-                        tm = tim # so we return the last time we've got
+                if tim < (tm - 604800): # got no value in the last 2 weeks
+                    dtim=2
+                    tm = tim # so we return the last time we've got
                 returnstring = returnstring + ','+ str(dataname) + '=' + str(dataval)
         returnstring = returnstring + ' ' + str(int(tm + tz)) + '000000000'
         #if tm == 0:
         #    return ""
+        if debugging != 0:
+            debugtime = "Time: "+ time.asctime(time.gmtime(tm+tz)) + " " + str(dtim)
         return returnstring
 
 
@@ -105,9 +114,9 @@ class worker():
         cursor.close()
         for (name,channel_id, cindex) in channeldict:
             if rx_rssi is None:
-                rx_rssi=-255
+                rx_rssi=-512
             if tx_rssi is None:
-                tx_rssi=-255
+                tx_rssi=-512
             if cindex < 1 or cindex == "":
                 cindex=-1
             if address is None:
@@ -127,21 +136,25 @@ class worker():
             #print(self.getDatapoint(device,channel_id))
 
     def getDevice(self):
+        global debugtext
         cursor = self.dbh.cursor()
-        cursor.execute("select lower(replace(name,' ','_')) as name,"+
-                       "device_id,"+
-                       "rx_rssi,"+
-                       "tx_rssi,"+
-                       "address,"+
-                       "device_type "+
-                       "from device "+
-                       "where address is not null")
+        cursor.execute("SELECT "
+                       +"lower(replace(name,' ','_')) as name,"
+                       +"device_id,"
+                       +"rx_rssi,"
+                       +"tx_rssi,"
+                       +"address,"
+                       +"device_type "
+                       +"FROM device "
+                       +"WHERE address is not null")
         devicedict = cursor.fetchall()
         cursor.close()
         for (name, device_id, rx_rssi, tx_rssi,address,device_type) in devicedict:
             namearray = name.split('_',3)
             name1 = namearray[0]
             name2 = namearray[1]
+            if debugging != 0:
+                debugtext=name
             self.getChannel(name,device_id,rx_rssi,tx_rssi,address,device_type,name1,name2)
 
 ##################################################################
