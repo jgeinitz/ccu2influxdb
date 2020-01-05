@@ -32,7 +32,7 @@ class w:
 
         values=" "
         tags = "coordlon="+ str(obj['coord']['lon'])+","+"coordlat="+str(obj['coord']['lat'])
-        tags += ",name=\""+ str(obj['name']) + '"'
+        tags += ",name="+ str(obj['name'])
         #for l in obj['weather']:
         #    values += "weather_" + str(l['id']) + '_main="' + str(l['main']) +'",'
         #    values += "weather_" + str(l['id']) + '_description="' + str(l['description']) + '",'
