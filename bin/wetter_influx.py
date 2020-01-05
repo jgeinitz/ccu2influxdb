@@ -2,7 +2,7 @@
 import json
 import pycurl
 
-debugging=1
+debugging=0
 
 class send_to_influxdb:
     global debugtext
@@ -78,7 +78,7 @@ class w:
         except KeyError as e:
             err=1
         if debugging != 0:
-            print "openweathermap,"+tags + values
+            print("openweathermap,"+tags + values)
         else:
             c = send_to_influxdb()
             c.insert_record("openweathermap," + tags + values)
