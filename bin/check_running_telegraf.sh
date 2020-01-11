@@ -15,6 +15,6 @@ else
 fi
 if [ $need_restart -ne 0  ]
 then
-	/bin/rm $telegrafpid
-	/usr/lib/telegraf/scripts/init.sh restart
+	/bin/rm $telegrafpid 2>/dev/null
+	/usr/lib/telegraf/scripts/init.sh restart 2>&1 >/dev/null
 fi
