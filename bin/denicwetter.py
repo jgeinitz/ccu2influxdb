@@ -74,10 +74,13 @@ class DenicWeather:
 
         if telegram[0:1] == '9':
             sid=int(telegram[1:2],16)*4 + ((int(telegram[2:3],16)&0xc)/4)
-            if int(telegram[2:3])&2 :
-                new_battery=1
-            else:
-                new_battery=0
+            try:
+                if int(telegram[2:3])&2 :
+                    new_battery=1
+                else:
+                    new_battery=0
+            except ValueError as e:
+                return 0
             temperature = ( (float(telegram[3:4])*10) + float(telegram[4:5]) + (float(telegram[5:6])/10.0)) - 40
             if (int(telegram[6:7])&0x8) != 0:
                 lowbat=1
