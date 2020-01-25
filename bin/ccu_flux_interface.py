@@ -4,13 +4,22 @@
 
 import urllib3
 import xml.dom.minidom
+#############################################################################
+# Flow
+# init system (vars,etc, configfile,...)
+#############################################################################
 
 class readccuxml:
+    ccuaddr = "http://localhost/"
 
 
-    def __init__(self):
+    def readout(self):
         http = urllib3.PoolManager()
-        remot = http.request('GET','http://192.168.21.19/addons/xmlapi/statelist.cgi')
+        try:
+            remot = http.request('GET',self.ccuaddr + 'addons/xmlapi/statelist.cgi')
+        except:
+            print("open error ")
+            exit(1)
         dom = xml.dom.minidom.parseString(remot.data)
         for statelist in dom.childNodes:
             for device in statelist.childNodes:
@@ -20,8 +29,62 @@ class readccuxml:
                 #for c in device.childNodes:
                 #    print(c)
 
+    def __init__(self, addr):
+        self.ccuaddr = addr
+        
+#############################################################################
+#############################################################################
+#############################################################################
 
-x = readccuxml()
+# +------------------------------------------------------------------+
+# | setup syslog and say hello                                       |
+# | check for another running instance                               |
+# | ---- and exit if found telling syslog about it                   |
+# | init database fi needed                                          |
+# | setup ccureader and influxdb writer                              |
+ccu = readccuxml("http://192.168.21.19/")
+# | setup timer system                                               |
+# +------------------------------------------------------------------|
+# | | while running                                                  |
+# | +----------------------------------------------------------------+
+# | | daily update needed?                                           |
+# | +------yes------------------+------------------------------------+
+# | | fetch daily data from ccu |                                    |
+# | | store in database         |    %                               |
+# | | daily done                |                                    |
+# | +---------------------------+------------no----------------------+
+# | |                           | note timestamp                     |
+# | |       %                   | fetch data from ccu to database    |
+ccu.readout()
+# | |                           | read databse and send to influxdb  |
+# | |                           | wait for a reasonable time         |
+# +-+---------------------------+------------------------------------+
+
+#
+#
+# Flow
+# +------------------------------------------------------------------+
+# | setup syslog and say hello                                       |
+# | check for another running instance                               |
+# | ---- and exit if found telling syslog about it                   |
+# | init database fi needed                                          |
+# | setup timer system                                               |
+# +------------------------------------------------------------------|
+# | | while running                                                  |
+# | +----------------------------------------------------------------+
+# | | daily update needed?                                           |
+# | +------yes------------------+------------------------------------+
+# | | fetch daily data from ccu |                                    |
+# | | store in database         |    %                               |
+# | | daily done                |                                    |
+# | +---------------------------+------------no----------------------+
+# | |                           | note timestamp                     |
+# | |       %                   | fetch data from ccu to database    |
+# | |                           | read databse and send to influxdb  |
+# | |                           | wait for a reasonable time         |
+# +-+---------------------------+------------------------------------+
+
+#############################################################################
 #
 #<stateList>
 #<device name="Bad_Taster_NEQ0453551" ise_id="10519" unreach="false" sticky_unreach="false" config_pending="false">
