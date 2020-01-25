@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+import glob
 import os
 import calendar
 import time
@@ -131,20 +132,21 @@ class DenicWeather:
         
             
         # configure the serial connections (the parameters differs on the device you are connecting to)
-        try:
-            self.ser = serial.Serial(
-                port='/dev/ttyACM0',
-                baudrate=9600,
-                parity=serial.PARITY_NONE,
-                stopbits=serial.STOPBITS_ONE,
-                bytesize=serial.EIGHTBITS
-            )
-        except serial.SerialException as err:
-            print ('Cannot open serial line - ', err)
-            raise
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
+        for device in glob.glob("/dev/ttyACM*"):
+            try:
+                self.ser = serial.Serial(
+                    port=device,
+                    baudrate=9600,
+                    parity=serial.PARITY_NONE,
+                    stopbits=serial.STOPBITS_ONE,
+                    bytesize=serial.EIGHTBITS
+                )
+            except serial.SerialException as err:
+                print ('Cannot open serial line - ', err)
+                raise
+            except:
+                print "Unexpected error:", sys.exc_info()[0]
+                raise
 
         if self.verbose:
             print('init CUL')
