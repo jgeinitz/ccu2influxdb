@@ -1,6 +1,6 @@
 #!/usr/bin/python3
+# encoding=utf8
 #
-# version 0
 #
 # Flow
 # +------------------------------------------------------------------+
@@ -23,6 +23,10 @@
 # | |                           | read databse and send to influxdb  |
 # | |                           | wait for a reasonable time         |
 # +-+---------------------------+------------------------------------+
+
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 import urllib3
 import sqlite3
@@ -171,9 +175,9 @@ class logging:
     def __init__(self,myname):
         syslog.openlog(logoption=syslog.LOG_PID,
                        facility=syslog.LOG_DAEMON)
-        self.print(myname + " starting")
+        self.iprint(myname + " starting")
 
-    def print(self,text):
+    def iprint(self,text):
         syslog.syslog(syslog.LOG_INFO, text)
         if dEbug != 0:
             print("LOG: "+ str(text))
@@ -197,7 +201,7 @@ class storage:
     dbminor = 1
 
     def destroytables(self):
-        log.print("re-creating all tables")
+        log.iprint("re-creating all tables")
         self.databaseconnection.cursor()
         self.databaseconnection.execute("DROP TABLE IF EXISTS db_version")
         self.databaseconnection.execute("DROP TABLE IF EXISTS ise")
@@ -224,17 +228,16 @@ class storage:
                            str(maj) + " required " + str(self.dbmajor))
                 exit(1)
             if mino < self.dbminor:
-                log.print("Database warning program minor is " +
+                log.iprint("Database warning program minor is " +
                           str(self.dbminor) +
                           " database minor is " + str(mino))
             else:
                 if mino != self.dbminor:
-                    log.print("Database warning: database is newer than program "+
+                    log.iprint("Database warning: database is newer than program "+
                               str(mino) + " <-> " + str(self.dbminor))
             
     def createtables(self):
         """ create all tables needed for this database """
-
         self.databaseconnection.cursor()
         try:
             self.databaseconnection.execute('''
@@ -326,21 +329,16 @@ class readccuxml:
         return(0)
 
     def readdevice(self, device):
-<<<<<<< HEAD
         devicetext=""
         device_id=""
         unreach=""
         sticky_unreach=""
         config_pending=""
-=======
-        print("readdevice")
->>>>>>> 4e2053c81ddcc403c37620fb45a6f7bcf9aebd83
         if device.hasAttributes():
             for deviceattribName in device.attributes.keys():
                 attr=device.getAttribute(deviceattribName)
                 if (attr =="true") or (attr =="false"):
                     attr = self.booltonumber(attr)
-<<<<<<< HEAD
                 if deviceattribName == "name":
                     currentdev=attr
                 elif deviceattribName == "ise_id":
@@ -377,40 +375,6 @@ class readccuxml:
         name=""
         operate=""
         index=""
-=======
-                print("D " +str(deviceattribName)
-                      + "='"
-                      + str(attr) + "'")
-        else:
-            print("device without attributes-")
-        for c in device.childNodes:
-            self.readchannel(c)
-
-
-    def readchannel(self, channel):
-        print("readchannel")
-        if channel.hasAttributes():
-            for channelattribName in channel.attributes.keys():
-                attr=channel.getAttribute(channelattribName)
-                if (attr =="true") or (attr =="false"):
-                    attr = self.booltonumber(attr)
-                print("c " + str(channelattribName)
-                      + "='"
-                      + str(attr) +"'")
-        for d in channel.childNodes:
-            self.readdatapoint(d)
-
-    def readdatapoint(self, dp):
-        print("readdatapoint")
-        if dp.hasAttributes():
-            for attribName in dp.attributes.keys():
-                attr=dp.getAttribute(attribName)
-                if (attr =="true") or (attr =="false"):
-                    attr = self.booltonumber(attr)
-                print("d " + str(attribName)
-                      + "='"
-                      + str(attr) +"'")
->>>>>>> 4e2053c81ddcc403c37620fb45a6f7bcf9aebd83
 
         if channel.hasAttributes():
             for channelattribName in channel.attributes.keys():
@@ -484,7 +448,7 @@ class readccuxml:
                  "timestamp = '" + str(time) + "', " +
                  "operation = '" + str(op) + "' " +
                  " WHERE " +
-                 "datapoint_id = '" + dataid + "'")
+                 "datapoint_id = '" + str(dataid) + "'")
             db.statement(q)
             db.commit()
             self.fill_ise(dataid,channel_id,device_id)
@@ -557,7 +521,6 @@ class readccuxml:
         for statelist in dom.childNodes:
             for device in statelist.childNodes:
                 self.readdevice(device)
-<<<<<<< HEAD
 
         try:
             remot = http.request('GET',self.ccuaddr + 'addons/xmlapi/devicelist.cgi')
@@ -581,9 +544,6 @@ class readccuxml:
         
         log.dprint("got all xml data")
 ## 
-=======
- 
->>>>>>> 4e2053c81ddcc403c37620fb45a6f7bcf9aebd83
     def __init__(self, addr):
         """ define the ccu to connect to"""
         self.ccuaddr = addr
@@ -621,29 +581,3 @@ influx.work()
 # | |                           | wait for a reasonable time         |
 # +-+---------------------------+------------------------------------+
 
-<<<<<<< HEAD
-=======
-
-#############################################################################
-#
-#<stateList>
-#<device name="Bad_Taster_NEQ0453551" ise_id="10519" unreach="false" sticky_unreach="false" config_pending="false">
-#<channel name="Bad_Taster_NEQ0453551:0" ise_id="10520" index="0" visible="" operate="">
-#<datapoint name="BidCos-RF.NEQ0453551:0.UNREACH" type="UNREACH" ise_id="10536" value="false" valuetype="2" valueunit="" timestamp="1577012041" operations="5"/>
-#<datapoint name="BidCos-RF.NEQ0453551:0.STICKY_UNREACH" type="STICKY_UNREACH" ise_id="10532" value="false" valuetype="2" valueunit="" timestamp="1577012041" operations="7"/>
-#<datapoint name="BidCos-RF.NEQ0453551:0.CONFIG_PENDING" type="CONFIG_PENDING" ise_id="10522" value="false" valuetype="2" valueunit="" timestamp="1577012041" operations="5"/>
-#<datapoint name="BidCos-RF.NEQ0453551:0.LOWBAT" type="LOWBAT" ise_id="10526" value="false" valuetype="2" valueunit="" timestamp="1577012041" operations="5"/>
-#<datapoint name="BidCos-RF.NEQ0453551:0.RSSI_DEVICE" type="RSSI_DEVICE" ise_id="10530" value="1" valuetype="8" valueunit="" timestamp="1577012041" operations="5"/>
-#<datapoint name="BidCos-RF.NEQ0453551:0.RSSI_PEER" type="RSSI_PEER" ise_id="10531" value="1" valuetype="8" valueunit="" timestamp="1577012041" operations="5"/>
-#</channel>
-#<channel name="Bad_Taster_NEQ0453551:1" ise_id="10540" index="1" visible="true" operate="true">
-#<datapoint name="BidCos-RF.NEQ0453551:1.PRESS_SHORT" type="PRESS_SHORT" ise_id="10545" value="" valuetype="2" valueunit="" timestamp="0" operations="6"/>
-#<datapoint name="BidCos-RF.NEQ0453551:1.PRESS_LONG" type="PRESS_LONG" ise_id="10543" value="" valuetype="2" valueunit="" timestamp="0" operations="6"/>
-#</channel>
-#<channel name="Bad_Taster_NEQ0453551:2" ise_id="10546" index="2" visible="true" operate="true">
-#<datapoint name="BidCos-RF.NEQ0453551:2.PRESS_SHORT" type="PRESS_SHORT" ise_id="10551" value="" valuetype="2" valueunit="" timestamp="0" operations="6"/>
-#<datapoint name="BidCos-RF.NEQ0453551:2.PRESS_LONG" type="PRESS_LONG" ise_id="10549" value="" valuetype="2" valueunit="" timestamp="0" operations="6"/>
-#</channel>
-#</device>
-#</statelist>
->>>>>>> 4e2053c81ddcc403c37620fb45a6f7bcf9aebd83
