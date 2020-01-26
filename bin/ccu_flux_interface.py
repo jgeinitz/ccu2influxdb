@@ -234,7 +234,7 @@ class storage:
             
     def createtables(self):
         """ create all tables needed for this database """
-<<<<<<< HEAD
+
         self.databaseconnection.cursor()
         try:
             self.databaseconnection.execute('''
@@ -311,66 +311,6 @@ class storage:
             self.destroytables()
         self.createtables()
         self.chkDBversion()
-=======
-        # CREATE TABLE db_version (major INTEGER NOT NULL,
-        #                          minor INTEGER NOT NULL,
-        #               UNIQUE KEY version_key (major, minor)
-        #                          )
-        #
-        # CREATE TABLE ise (device_id    INTEGER NOT NULL,
-        #                   channel_id   INTEGER NOT NULL,
-        #                   datapoint_id INTEGER NOT NULL,
-        #        UNIQUE KEY ise_key (device_id, channel_id, datapoint_id)
-        #                   )
-        #
-        # CREATE TABLE device (name           VARCHAR(64) DEFAULT NULL,
-        #                      device_id      INTEGER NOT NULL,
-        #                      unreach        BOOLEAN DEFAULT NULL,
-        #                      sticky_unrach  BOOLEAN DEFAULT NULL,
-        #                      config_pending BOOLEAN_DEFAULT NULL,
-        #                      rx_rssi        INTEGER DEFAULT NULL,
-        #                      tx_rssi        INTEGER DEFAULT NULL,
-        #                      address        VARCHAR(32) DEFAULT NULL,
-        #                      interface      VARCHAR(16) DEFAULT '',
-        #                      device_type    VARCHAR(32) DEFAULT NULL,
-        #                      ready_config   BOOLEAN DEFAULT NULL,
-        #         PRIMARY KEY (device_id))
-        #
-        # CREATE TABLE channel (name              VARCHAR(64) DEFAULT NULL,
-        #                       channel_id        INTEGER NOT NULL,
-        #                       visible           BOOLEAN DEFAULT NULL,
-        #                       operate           BOOLEAN DEFAULT NULL,
-        #                       type              INTEGER DEFAULT -1,
-        #                       address           VARCHAR(32) DEFAULT '',
-        #                       direction         VARCHAR(16) DEFAULT '',
-        #                       channel_index     INTEGER DEFAULT '-1',
-        #                       group_partner     VARCHAR(32) DEFAULT NULL,
-        #                       aes_available     BOOLEAN DEFAULT NULL,
-        #                       transmission_mode VARCHAR(32) DEFAULT NULL,
-        #                       indx              INTEGER DEFAULT NULL,
-        #          PRIMARY KEY (channel_id))
-        #
-        #
-        # CREATE TABLE datapoint (name         VARCHAR(64) DEFAULT NULL,
-        #                         datapoint_id INTEGER NOT NULL,
-        #                         type         VARCHAR(32) DEFAULT NULL,
-        #                         value        VARCHAR(64) DEFAULT NULL,
-        #                         valuetype    VARCHAR(64) DEFAULT NULL,
-        #                         valueunit    VARCHAR(16) DEFAULT NULL,
-        #                         timestamp    TIMESTAMP NULL DEFAULT NULL,
-        #                         operation    INTEGER DEFAULT NULL,
-        #            PRIMARY KEY (datapoint_id))
-        #
-        ####
-        print("create db")
-
-    def stetemnt(self, sql):
-        print(sql)
-
-
-    def __init__(self, store="/tmp/ccu.db"):
-        self.storagename = store
->>>>>>> 4e2053c81ddcc403c37620fb45a6f7bcf9aebd83
         
 #############################################################################
 #############################################################################
