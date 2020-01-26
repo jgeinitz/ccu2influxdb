@@ -44,7 +44,7 @@ global log
 # Flow
 # init system (vars,etc, configfile,...)
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--debug',   help='debug output', default=2)
+parser.add_argument('-d', '--debug',   help='debug output', default=0)
 parser.add_argument('-f', '--influxdb', help='base url of the influxdb',
                     default="http://127.0.0.1:9999")
 parser.add_argument('-R', '--Recreate',help='re-create tables', default=0)
@@ -96,6 +96,10 @@ class processdata:
                        +"WHERE address is not null"):
             (name,device_id, rx_rssi, tx_rssi, address, device_type) = row
             namearray = name.split('_')
+            if rx_rssi == "None":
+                rx_rssi=65533
+            if tx_rssi == "None":
+                tx_rssi=65533
             self.getchannel(name,device_id,
                             rx_rssi, tx_rssi,
                             address, device_type,
@@ -260,8 +264,8 @@ class storage:
                 unreach        BOOLEAN DEFAULT NULL,
                 sticky_unreach BOOLEAN DEFAULT NULL,
                 config_pending BOOLEAN_DEFAULT NULL,
-                rx_rssi        INTEGER DEFAULT NULL,
-                tx_rssi        INTEGER DEFAULT NULL,
+                rx_rssi        INTEGER DEFAULT 65530,
+                tx_rssi        INTEGER DEFAULT 65530,
                 address        VARCHAR(32) DEFAULT NULL,
                 interface      VARCHAR(16) DEFAULT '',
                 device_type    VARCHAR(32) DEFAULT NULL,
@@ -397,7 +401,6 @@ class readccuxml:
             newdevice = c.fetchone()
             db.commit()
             if newdevice[0] == 0:
-                print(">> " + str(channel_id) + "   "+ str(newdevice[0]))
                 db.statement("INSERT INTO channel (channel_id) VALUES ('"+str(channel_id)+"')")
             db.statement("UPDATE channel SET "+
                          "name = '" + str(name) + "', " +
@@ -479,8 +482,12 @@ class readccuxml:
                 if attribName == "device":
                     device = attr
                 elif attribName == "rx":
+                    if attr == "None":
+                        attr=65536
                     rx = attr
                 elif attribName == "tx":
+                    if attr == "None":
+                        attr=65536
                     tx = attr
                 q=("UPDATE device SET rx_rssi='"+str(rx)+"', tx_rssi='"+str(tx)+"' WHERE address ='"+str(device)+"'")
                 db.statement(q)
