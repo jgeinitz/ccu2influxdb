@@ -1,6 +1,27 @@
 #!/usr/bin/python3
 #
 #
+# Flow
+# +------------------------------------------------------------------+
+# | setup syslog and say hello                                       |
+# | check for another running instance                               |
+# | ---- and exit if found telling syslog about it                   |
+# | init database fi needed                                          |
+# | setup timer system                                               |
+# +------------------------------------------------------------------|
+# | | while running                                                  |
+# | +----------------------------------------------------------------+
+# | | daily update needed?                                           |
+# | +------yes------------------+------------------------------------+
+# | | fetch daily data from ccu |                                    |
+# | | store in database         |    %                               |
+# | | daily done                |                                    |
+# | +---------------------------+------------no----------------------+
+# | |                           | note timestamp                     |
+# | |       %                   | fetch data from ccu to database    |
+# | |                           | read databse and send to influxdb  |
+# | |                           | wait for a reasonable time         |
+# +-+---------------------------+------------------------------------+
 
 import urllib3
 import xml.dom.minidom
@@ -70,6 +91,9 @@ class storage:
         ####
         print("create db")
 
+    def stetemnt(self, sql):
+        print(sql)
+
 
     def __init__(self, store="/tmp/ccu.db"):
         self.storagename = store
@@ -77,10 +101,58 @@ class storage:
 #############################################################################
 #############################################################################
 class readccuxml:
+    """purpose: fetch values from ccu using the xml plugin
+       parse the xml and construct sql statements to store the
+       data inside a reletional database"""
     ccuaddr = "http://localhost/"
 
+    def booltonumber(self, invar):
+        if invar == "true":
+            return(1)
+        return(0)
+
+    def readdevice(self, device):
+        print("readdevice")
+        if device.hasAttributes():
+            for deviceattribName in device.attributes.keys():
+                attr=device.getAttribute(deviceattribName)
+                if (attr =="true") or (attr =="false"):
+                    attr = self.booltonumber(attr)
+                print("D " +str(deviceattribName)
+                      + "='"
+                      + str(attr) + "'")
+        else:
+            print("device without attributes-")
+        for c in device.childNodes:
+            self.readchannel(c)
+
+
+    def readchannel(self, channel):
+        print("readchannel")
+        if channel.hasAttributes():
+            for channelattribName in channel.attributes.keys():
+                attr=channel.getAttribute(channelattribName)
+                if (attr =="true") or (attr =="false"):
+                    attr = self.booltonumber(attr)
+                print("c " + str(channelattribName)
+                      + "='"
+                      + str(attr) +"'")
+        for d in channel.childNodes:
+            self.readdatapoint(d)
+
+    def readdatapoint(self, dp):
+        print("readdatapoint")
+        if dp.hasAttributes():
+            for attribName in dp.attributes.keys():
+                attr=dp.getAttribute(attribName)
+                if (attr =="true") or (attr =="false"):
+                    attr = self.booltonumber(attr)
+                print("d " + str(attribName)
+                      + "='"
+                      + str(attr) +"'")
 
     def readout(self):
+        """ workhorse alss the work is done here"""
         http = urllib3.PoolManager()
         try:
             remot = http.request('GET',self.ccuaddr + 'addons/xmlapi/statelist.cgi')
@@ -90,13 +162,10 @@ class readccuxml:
         dom = xml.dom.minidom.parseString(remot.data)
         for statelist in dom.childNodes:
             for device in statelist.childNodes:
-                if device.hasAttributes():
-                    for deviceattribName in device.attributes.keys():
-                        print(str(deviceattribName) + " " + device.getAttribute(deviceattribName))
-                #for c in device.childNodes:
-                #    print(c)
-
+                self.readdevice(device)
+ 
     def __init__(self, addr):
+        """ define the ccu to connect to"""
         self.ccuaddr = addr
         
 #############################################################################
@@ -128,29 +197,6 @@ ccu.readout()
 # | |                           | wait for a reasonable time         |
 # +-+---------------------------+------------------------------------+
 
-#
-#
-# Flow
-# +------------------------------------------------------------------+
-# | setup syslog and say hello                                       |
-# | check for another running instance                               |
-# | ---- and exit if found telling syslog about it                   |
-# | init database fi needed                                          |
-# | setup timer system                                               |
-# +------------------------------------------------------------------|
-# | | while running                                                  |
-# | +----------------------------------------------------------------+
-# | | daily update needed?                                           |
-# | +------yes------------------+------------------------------------+
-# | | fetch daily data from ccu |                                    |
-# | | store in database         |    %                               |
-# | | daily done                |                                    |
-# | +---------------------------+------------no----------------------+
-# | |                           | note timestamp                     |
-# | |       %                   | fetch data from ccu to database    |
-# | |                           | read databse and send to influxdb  |
-# | |                           | wait for a reasonable time         |
-# +-+---------------------------+------------------------------------+
 
 #############################################################################
 #
