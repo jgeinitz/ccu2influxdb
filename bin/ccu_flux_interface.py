@@ -65,7 +65,7 @@ class send_to_influxdb:
     connection=""
     def __init__(self,dbconnector):
         self.connection = pycurl.Curl()
-        self.connection.setopt(self.connection.URL, dbconnector+"/write?db=homematictest")
+        self.connection.setopt(self.connection.URL, dbconnector+"/write?db=homematic")
 
     def insert_record(self,string):
         self.connection.setopt(self.connection.POSTFIELDS, str(string))
