@@ -110,6 +110,7 @@ class processdata:
 
     def getchannel(self, dname, device, rx_rssi, tx_rssi, address, device_type,
                    name1, name2):
+        global log
         c = db.cursor()
         q=("select "
            +"distinct(lower(replace(replace(channel.name,' ','_'),':','_'))) as name"
@@ -125,6 +126,7 @@ class processdata:
         for row in c.execute(q):
             (name, channel_id, cindex) = row
             dp = self.getdatapoint(device, channel_id)
+            log.dprint("inserting " + str(dp) + " name: " + str(name))
             if dp != "":
                 self.influx.insert_record(str(dname)
                       +",index="+str(cindex)
@@ -162,8 +164,9 @@ class processdata:
                 if dataval == "true":
                     dataval=1
                 if tim < (tm - 604800): # got no value in the last 2 weeks
-                    dtim=2
-                    tm = tim # so we return the last time we've got
+                    return ""
+#                    dtim=2
+#                    tm = tim # so we return the last time we've got
                 returnstring = returnstring + ','+ str(dataname) + '=' + str(dataval)
         returnstring = returnstring + ' ' + str(int(tm)) + '000000000'
         #if tm == 0:
