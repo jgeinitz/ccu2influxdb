@@ -190,8 +190,8 @@ class logging:
             print("LOG: "+ str(text))
 
     def dprint(self,text):
-        syslog.syslog(syslog.LOG_DEBUG, text)
         if dEbug > 1:
+            syslog.syslog(syslog.LOG_DEBUG, text)
             print("DBG: "+ str(text))
 
     def eprint(self,text):
