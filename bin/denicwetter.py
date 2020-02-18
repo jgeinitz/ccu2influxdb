@@ -85,10 +85,13 @@ class DenicWeather:
                 temperature = ( (float(telegram[3:4])*10) + float(telegram[4:5]) + (float(telegram[5:6])/10.0)) - 40
             except ValueError as e:
                 return 0
-            if (int(telegram[6:7])&0x8) != 0:
-                lowbat=1
-            else:
-                lowbat=0
+            try:
+                if (int(telegram[6:7])&0x8) != 0:
+                    lowbat=1
+                else:
+                    lowbat=0
+            except ValueError as e:
+                lowbat = 0
             hygro= ((int(telegram[6:7])&0x7)<<4)+int(telegram[7:8],16)
             crc= (int(telegram[8:9],16)<<4)+int(telegram[9:10],16)
             return 1
