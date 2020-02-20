@@ -92,8 +92,14 @@ class DenicWeather:
                     lowbat=0
             except ValueError as e:
                 lowbat = 0
-            hygro= ((int(telegram[6:7])&0x7)<<4)+int(telegram[7:8],16)
-            crc= (int(telegram[8:9],16)<<4)+int(telegram[9:10],16)
+            try:
+                hygro= ((int(telegram[6:7])&0x7)<<4)+int(telegram[7:8],16)
+            except ValueError:
+                hygro = 0
+            try:
+                crc= (int(telegram[8:9],16)<<4)+int(telegram[9:10],16)
+            except ValueError:
+                crc=0
             return 1
         else:
             if self.verbose : print 'unknown length '+telegram[0:1]
