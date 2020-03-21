@@ -7,6 +7,11 @@ import calendar
 import time
 import serial
 
+hygro = 0
+sid = 0
+temperature = 0
+new_battery = 0
+lowbat = 0
 
 class DenicWeather:
     global ser
@@ -36,6 +41,11 @@ class DenicWeather:
         print('\n')
 
     def reportvaluesLine(self,flux=0):
+        global hygro
+        global sid
+        global temperature
+        global new_battery
+
         if hygro == 106:
             h="-1"
         else:
@@ -44,7 +54,8 @@ class DenicWeather:
             x='sensorid:'+str(sid)+' newbat:'+str(new_battery)+ ' lowbat:'+str(lowbat)+' temp:'+str(temperature) + ' humidity:'+h + ' '
         else:
             x='denicwetter,id='+str(sid)+' sensorid='+str(sid)+',temp='+str(temperature)
-        print x
+        if temperature != 0:
+            print(x)
         #sys.stdout.write( x )
         #sys.stdout.flush()
 
@@ -118,7 +129,7 @@ class DenicWeather:
         self.quiet=q
 
         if self.verbose:
-            print ('Interface between DENIC Weather Station and MySql')
+            print ('Interface between DENIC Weather Station and influxdb')
             print ('Opening CUL connection')
 
         p = '/disk/tmp/' + os.path.basename(myname)  + '.pid'
@@ -177,12 +188,21 @@ class DenicWeather:
         if self.verbose:
             print('entering readloop')
         while running == 1 :
-            while self.ser.inWaiting() > 0:
+            while self.ser.in_waiting:
+                if self.verbose:
+                    print("after wait")
                 try:
                     out = self.ser.readline()
                 except self.ser.SerialException as err:
                     out = ''
                 if out != '':
+                    if self.verbose:
+                        print("rcv: "+str(out))
+                    if out.rstrip('\n').rstrip('\r') == "02":
+                        if self.verbose:
+                            print("init response")
+                        running = 1
+
                     if self.culparse(out.rstrip('\n').rstrip('\r')):
                         if self.checkcrc(out.rstrip('\n').rstrip('\r')):
                             running=0
@@ -190,10 +210,14 @@ class DenicWeather:
                             running=1
                         if self.verbose:
                             self.reportvalues()
+                            self.reportvaluesCCU(flux)
                         #if sid != 14 : running = 1
                             #print(sid)
+                else:
+                    print("empty read")
+                    sleepcounter = sleepcounter + 1
                 if running == 1:
-                    time.sleep(1)
+                    time.sleep(9)
                     sleepcounter = sleepcounter + 1
                     if sleepcounter > 55:
                         if self.verbose:
@@ -205,10 +229,6 @@ class DenicWeather:
         if self.quiet != 1:
             self.reportvaluesLine(flux)
         self.reportvaluesCCU(flux)
-
-
-
-
 
 
     def finish(self):
@@ -241,7 +261,9 @@ def __main__():
     x = DenicWeather(i_am,v,q)
     while 1 == 1:
         x.readloop(outputformat)
-        time.sleep(30)
+        if v:
+            print("after readloop sleeping")
+        time.sleep(99)
     x.finish()
 
 __main__()
