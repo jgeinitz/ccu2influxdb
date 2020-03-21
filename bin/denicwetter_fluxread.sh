@@ -1,4 +1,5 @@
 #!/bin/sh
 FIL=/disk/tmp/DENICt.txt
 cat $FIL
-/bin/rm $FIL
+cp /den/null $FIL
+#/bin/rm $FIL
