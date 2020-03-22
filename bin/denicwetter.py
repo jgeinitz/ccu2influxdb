@@ -206,7 +206,7 @@ class DenicWeather:
                     if self.culparse(out.rstrip('\n').rstrip('\r')):
                         if self.checkcrc(out.rstrip('\n').rstrip('\r')):
                             running=0
-                        if self.ser.inWaiting() > 0 :
+                        if self.ser.in_waiting > 3 :
                             running=1
                         if self.verbose:
                             self.reportvalues()
@@ -217,7 +217,7 @@ class DenicWeather:
                     print("empty read")
                     sleepcounter = sleepcounter + 1
                 if running == 1:
-                    time.sleep(9)
+                    time.sleep(29)
                     sleepcounter = sleepcounter + 1
                     if sleepcounter > 55:
                         if self.verbose:
