@@ -7,16 +7,16 @@ import calendar
 import time
 import serial
 
-hygro = 0
-sid = 0
+hygro       = 0
+sid         = 0
 temperature = 0
 new_battery = 0
-lowbat = 0
+lowbat      = 0
 
 class DenicWeather:
-    global ser
-    verbose = 0
-    quiet = 0
+    global      ser
+    verbose     = 0
+    quiet       = 0
     temperature = 0.0
 
     def printYesNo(self,val):
@@ -37,6 +37,7 @@ class DenicWeather:
             h="NaN"
         else:
             h=str(hygro)
+
         print("humidity:    "+h)
         print('\n')
 
@@ -65,10 +66,7 @@ class DenicWeather:
             if flux == 0:
                 fil.write(str(temperature))
             else:
-#                ts = calendar.timegm(time.gmtime())
                 ts = int(time.time())
-#                fil.write('denicwetter,id='+str(sid)+' sensorid='+str(sid)+',temp='+str(temperature))
-#                fil.write('denicwetter,id='+str(sid)+' sensorid='+str(sid)+',temp='+str(temperature) + ' ' + str(ts))
                 fil.write('denicwetter,id='+str(sid)+' sensorid='+str(sid)+',temp='+str(temperature) + " " +str(ts) + '000000000')
             fil.write("\n")
             fil.close()
@@ -210,7 +208,7 @@ class DenicWeather:
                             running=1
                         if self.verbose:
                             self.reportvalues()
-                            self.reportvaluesCCU(flux)
+                        self.reportvaluesCCU(flux)
                         #if sid != 14 : running = 1
                             #print(sid)
                 else:
