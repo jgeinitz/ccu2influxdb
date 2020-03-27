@@ -223,6 +223,7 @@ class DenicWeather:
                             running = 0
                         else:
                             print("timeout")
+                            exit(0)
 
         if self.quiet != 1:
             self.reportvaluesLine(flux)
