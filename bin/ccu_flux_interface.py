@@ -44,22 +44,20 @@ global log
 # Flow
 # init system (vars,etc, configfile,...)
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--debug',   help='debug output', default=0)
-parser.add_argument('-f', '--influxdb', help='base url of the influxdb',
-                    default="http://127.0.0.1:9999")
-parser.add_argument('-R', '--Recreate',help='re-create tables', default=0)
-parser.add_argument('-s', '--database',help='path to database',
-                    default="/tmp/ccu.db")
-parser.add_argument('-u', '--ccu',     help='address of ccu',
-                    default='http://192.168.21.19/')
-parser.add_argument('-v', '--verbose', help='be noisy', default=0)
+parser.add_argument('-d', '--debug',   help='debug output',            default=0)
+parser.add_argument('-f', '--influxdb',help='base url of the influxdb',default="http://127.0.0.1:9999")
+parser.add_argument('-R', '--Recreate',help='re-create tables',        default=0)
+parser.add_argument('-s', '--database',help='path to database',        default="/tmp/ccu.db")
+parser.add_argument('-u', '--ccu',     help='address of ccu',          default='http://192.168.21.19/')
+parser.add_argument('-v', '--verbose', help='be noisy',                default=0)
+
 args = parser.parse_args()
+
 dEbug = args.verbose
 dEbug = args.debug
 store = args.database
 #############################################################################
 
-#############################################################################
 #############################################################################
 class send_to_influxdb:
     connection=""
@@ -72,7 +70,6 @@ class send_to_influxdb:
         log.dprint(str(string))
         self.connection.perform()
 
-#############################################################################
 #############################################################################
 class processdata:
     influx=""
@@ -112,17 +109,17 @@ class processdata:
                    name1, name2):
         global log
         c = db.cursor()
-        q=("select "
-           +"distinct(lower(replace(replace(channel.name,' ','_'),':','_'))) as name"
-           +",channel.channel_id as channel_id"
-           +",channel.indx as cindex"
-           +"  from channel,device,ise"
-           +"  where "
-           +"ise.device_id='"+str(device)+"'"
-           +" AND "
-           +"channel.channel_id=ise.channel_id"
-           +" and "
-           +"device.device_id=ise.device_id")
+        q=("SELECT "
+           +"  distinct(lower(replace(replace(channel.name,' ','_'),':','_'))) as name,"
+           +"  channel.channel_id as channel_id,"
+           +"  channel.indx as cindex"
+           +"FROM channel,device,ise"
+           +"WHERE "
+           +"  ise.device_id='"+str(device)+"' "
+           +"AND "
+           +"  channel.channel_id=ise.channel_id "
+           +"AND "
+           +"  device.device_id=ise.device_id")
         for row in c.execute(q):
             (name, channel_id, cindex) = row
             dp = self.getdatapoint(device, channel_id)
@@ -144,17 +141,24 @@ class processdata:
     def getdatapoint(self,device_id,channel_id):
         returnstring=""
         cursor = db.cursor()
-        q=("SELECT lower(datapoint.type) as dataname,"+
-                "datapoint.value AS dataval, "+
-                "datapoint.valuetype AS vt, "+
-                "datapoint.timestamp AS tim "+
-                "FROM datapoint,channel,device,ise "+
-                "WHERE datapoint.datapoint_id=ise.datapoint_id"+
-                " AND channel.channel_id = ise.channel_id"+
-                " AND device.device_id = ise.device_id"+
-                " AND device.device_id = '"+str(device_id)+"'"+
-                " AND channel.channel_id = "+str(channel_id)+" "+
-                "ORDER BY datapoint.timestamp ASC")
+        q=("SELECT "
+           +"  lower(datapoint.type) AS dataname, "
+           +"  datapoint.value AS dataval, "
+           +"  datapoint.valuetype AS vt, "
+           +"  datapoint.timestamp AS tim "
+           +"FROM "
+           +"  datapoint,channel,device,ise "
+           +"WHERE "
+           +"  datapoint.datapoint_id=ise.datapoint_id "
+           +"AND "
+           +"  channel.channel_id = ise.channel_id "
+           +"AND "
+           +"  device.device_id = ise.device_id "
+           +"AND "
+           +"  device.device_id = '"+str(device_id)+"' "
+           +"AND "
+           +"  channel.channel_id = "+str(channel_id)+" "
+           +"ORDER BY datapoint.timestamp ASC")
         tm=int(time.time())
         for row in cursor.execute(q):
             ( dataname, dataval, vt, tim) = row
@@ -163,7 +167,7 @@ class processdata:
                     dataval=0
                 if dataval == "true":
                     dataval=1
-                if tim < (tm - 604800): # got no value in the last 2 weeks
+                if tim < (tm - 1814400): # got no value in the last 6 weeks
                     return ""
 #                    dtim=2
 #                    tm = tim # so we return the last time we've got
