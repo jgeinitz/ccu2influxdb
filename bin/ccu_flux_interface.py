@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 # encoding=utf8
 #
 #
@@ -159,6 +159,8 @@ class processdata:
            +"  channel.channel_id = "+str(channel_id)+" "
            +"ORDER BY datapoint.timestamp ASC")
         tm=int(time.time())
+        datavalues=""
+        got_a_datapoint=0
         for row in cursor.execute(q):
             ( dataname, dataval, vt, tim) = row
             if dataval != "" and dataname != "" and vt != 20 and dataname != 'ip' and dataname != 'info':
@@ -166,14 +168,13 @@ class processdata:
                     dataval=0
                 if dataval == "true":
                     dataval=1
-                if tim < (tm - 1814400): # got no value in the last 6 weeks
-                    return ""
-#                    dtim=2
+                if tim >= (tm - 1814400): # got no value in the last 6 weeks
+                    got_a_datapoint = 1
 #                    tm = tim # so we return the last time we've got
-                returnstring = returnstring + ','+ str(dataname) + '=' + str(dataval)
+                    returnstring = returnstring + ','+ str(dataname) + '=' + str(dataval)
         returnstring = returnstring + ' ' + str(int(tm)) + '000000000'
-        #if tm == 0:
-        #    return ""
+        if got_a_datapoint == 0:
+            return ""
         return returnstring
 
 
