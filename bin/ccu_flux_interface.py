@@ -44,12 +44,12 @@ global log
 # Flow
 # init system (vars,etc, configfile,...)
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--debug',   help='debug output',            default=0)
-parser.add_argument('-f', '--influxdb',help='base url of the influxdb',default="http://127.0.0.1:9999")
-parser.add_argument('-R', '--Recreate',help='re-create tables',        default=0)
-parser.add_argument('-s', '--database',help='path to database',        default="/tmp/ccu.db")
-parser.add_argument('-u', '--ccu',     help='address of ccu',          default='http://192.168.21.19/')
-parser.add_argument('-v', '--verbose', help='be noisy',                default=0)
+parser.add_argument('-d', '--debug',   help='debug output (takes a number)',default=0)
+parser.add_argument('-f', '--influxdb',help='base url of the influxdb',     default="http://influxdb.example.com")
+parser.add_argument('-R', '--Recreate',help='re-create tables',             default=0)
+parser.add_argument('-s', '--database',help='path to database',             default="/tmp/ccu.db")
+parser.add_argument('-u', '--ccu',     help='address of ccu',               default='http://ccu.example.com/')
+parser.add_argument('-v', '--verbose', help='be noisy (takes a number)',    default=0)
 
 args = parser.parse_args()
 
