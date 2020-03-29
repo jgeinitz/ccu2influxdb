@@ -67,7 +67,7 @@ class send_to_influxdb:
 
     def insert_record(self,string):
         self.connection.setopt(self.connection.POSTFIELDS, str(string))
-        log.dprint(str(string))
+        log.dprint("insert record " +str(string))
         self.connection.perform()
 
 #############################################################################
@@ -110,10 +110,10 @@ class processdata:
         global log
         c = db.cursor()
         q=("SELECT "
-           +"  distinct(lower(replace(replace(channel.name,' ','_'),':','_'))) as name,"
-           +"  channel.channel_id as channel_id,"
-           +"  channel.indx as cindex"
-           +"FROM channel,device,ise"
+           +"  distinct(lower(replace(replace(channel.name,' ','_'),':','_'))) AS name,"
+           +"  channel.channel_id AS channel_id,"
+           +"  channel.indx AS cindex "
+           +"FROM channel,device,ise "
            +"WHERE "
            +"  ise.device_id='"+str(device)+"' "
            +"AND "
@@ -123,17 +123,16 @@ class processdata:
         for row in c.execute(q):
             (name, channel_id, cindex) = row
             dp = self.getdatapoint(device, channel_id)
-            log.dprint("inserting " + str(dp) + " name: " + str(name))
             if dp != "":
                 self.influx.insert_record(str(dname)
-                      +",index="+str(cindex)
-                      +",devicetype="+str(device_type)
-                      +',name=' +str(name)
-                      +',name1=' +str(name1)
-                      +',name2=' +str(name2)
+                      +",index="         +str(cindex)
+                      +",devicetype="    +str(device_type)
+                      +',name='          +str(name)
+                      +',name1='         +str(name1)
+                      +',name2='         +str(name2)
                       +',deviceaddress=' +address
-                      +' rx_rssi=' +str(rx_rssi)
-                      +',tx_rssi=' +str(tx_rssi) 
+                      +' rx_rssi='       +str(rx_rssi)
+                      +',tx_rssi='       +str(tx_rssi)
                       +str(dp))
 
         db.commit()
@@ -176,13 +175,13 @@ class processdata:
         #if tm == 0:
         #    return ""
         return returnstring
- 
+
 
 #############################################################################
 #############################################################################
 class logging:
     global dEbug
-    
+
     def __init__(self,myname):
         syslog.openlog(logoption=syslog.LOG_PID,
                        facility=syslog.LOG_DAEMON)
@@ -217,7 +216,7 @@ class storage:
         self.databaseconnection.execute("DROP TABLE IF EXISTS db_version")
         self.databaseconnection.execute("DROP TABLE IF EXISTS ise")
         self.databaseconnection.execute("DROP TABLE IF EXISTS device")
-        
+
 
     def chkDBversion(self):
         c = self.databaseconnection.cursor()
@@ -246,7 +245,7 @@ class storage:
                 if mino != self.dbminor:
                     log.iprint("Database warning: database is newer than program "+
                               str(mino) + " <-> " + str(self.dbminor))
-            
+
     def createtables(self):
         """ create all tables needed for this database """
         self.databaseconnection.cursor()
@@ -325,7 +324,7 @@ class storage:
             self.destroytables()
         self.createtables()
         self.chkDBversion()
-        
+
 #############################################################################
 #############################################################################
 class readccuxml:
@@ -365,6 +364,7 @@ class readccuxml:
             c.execute(query)
             newdevice = c.fetchone()
             db.commit()
+            log.dprint("inserting device    record for "+str(currentdev))
             if newdevice[0] == 0:
                 db.statement("INSERT INTO device (device_id) VALUES ('"+str(device_id)+"')")
             db.statement("UPDATE device SET "+
@@ -375,7 +375,7 @@ class readccuxml:
                          " WHERE " +
                          "device_id = '" + device_id + "'")
             db.commit()
-                
+
         for c in device.childNodes:
             self.readchannel(c,device_id)
 
@@ -407,6 +407,7 @@ class readccuxml:
             c.execute(query)
             newdevice = c.fetchone()
             db.commit()
+            log.dprint("inserting channel   "+str(name))
             if newdevice[0] == 0:
                 db.statement("INSERT INTO channel (channel_id) VALUES ('"+str(channel_id)+"')")
             db.statement("UPDATE channel SET "+
@@ -447,6 +448,7 @@ class readccuxml:
             c.execute(query)
             newdevice = c.fetchone()
             db.commit()
+            log.dprint("inserting datapoint "+str(dataname))
             if newdevice[0] == 0:
                 db.statement("INSERT INTO datapoint (datapoint_id) VALUES ('"+str(dataid)+"')")
             q = ("UPDATE datapoint SET " +
@@ -479,7 +481,7 @@ class readccuxml:
                  "datapoint_id = '" + dat + "'")
             db.statement(q)
         db.commit()
-        
+
     def readrssidevice(self,dev):
         rx=65536
         tx=65536
@@ -521,7 +523,7 @@ class readccuxml:
                  "WHERE device_id = '" + ise + "'")
             db.statement(q)
             db.commit()
-            
+
     def readout(self):
         """ workhorse alss the work is done here"""
         http = urllib3.PoolManager()
@@ -555,14 +557,14 @@ class readccuxml:
         for rssilist in dom.childNodes:
             for list in rssilist.childNodes:
                 self.readrssidevice(list)
-        
+
         log.dprint("got all xml data")
-## 
+##
     def __init__(self, addr):
         """ define the ccu to connect to"""
         self.ccuaddr = addr
         log.dprint("xml parser: connecting to ccu at " + addr)
-        
+
 #############################################################################
 #############################################################################
 #############################################################################
