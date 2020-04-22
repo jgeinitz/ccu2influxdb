@@ -168,7 +168,7 @@ class processdata:
                     dataval=0
                 if dataval == "true":
                     dataval=1
-                if tim >= (tm - 1814400): # got no value in the last 6 weeks
+                if tim >= (tm - 3628800): # got no value in the last 6 weeks
                     got_a_datapoint = 1
 #                    tm = tim # so we return the last time we've got
                     returnstring = returnstring + ','+ str(dataname) + '=' + str(dataval)
