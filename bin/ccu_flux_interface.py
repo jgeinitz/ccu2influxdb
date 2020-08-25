@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 # encoding=utf8
 #
 #
@@ -25,8 +25,9 @@
 # +-+---------------------------+------------------------------------+
 
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
+#import importlib
+#importlib.reload(sys)
+#sys.setdefaultencoding('utf8')
 
 import urllib3
 import sqlite3
@@ -194,7 +195,7 @@ class logging:
             print("LOG: "+ str(text))
 
     def dprint(self,text):
-        if dEbug > 1:
+        if int(dEbug) > 1:
             syslog.syslog(syslog.LOG_DEBUG, text)
             print("DBG: "+ str(text))
 
@@ -529,8 +530,9 @@ class readccuxml:
         """ workhorse alss the work is done here"""
         http = urllib3.PoolManager()
         try:
-            remot = http.request('GET',self.ccuaddr + 'addons/xmlapi/statelist.cgi')
-        except:
+            remot = http.request('GET',self.ccuaddr + '/addons/xmlapi/statelist.cgi')
+        except Exception as e:
+            print(e.args)
             print("open error ")
             exit(1)
         dom = xml.dom.minidom.parseString(remot.data)
@@ -540,8 +542,9 @@ class readccuxml:
                 self.readdevice(device)
 
         try:
-            remot = http.request('GET',self.ccuaddr + 'addons/xmlapi/devicelist.cgi')
-        except:
+            remot = http.request('GET',self.ccuaddr + '/addons/xmlapi/devicelist.cgi')
+        except Exception as e :
+            print(e.args)
             print("open error for devicelist.xml")
             exit(1)
         dom = xml.dom.minidom.parseString(remot.data)
@@ -550,7 +553,7 @@ class readccuxml:
                 self.readdeviceinfo(l)
 
         try:
-            remot = http.request('GET',self.ccuaddr + 'addons/xmlapi/rssilist.cgi')
+            remot = http.request('GET',self.ccuaddr + '/addons/xmlapi/rssilist.cgi')
         except:
             print("open error for rssilist.xml")
             exit(1)
