@@ -613,8 +613,8 @@ influx = processdata(args.influxdb, args.mockup)
 # | setup timer system                                               |
 # +------------------------------------------------------------------|
 # | | while running                                                  |
-running = pidcheck()
-while running.isrunning():
+job = pidcheck()
+while job.isrunning():
 # | +----------------------------------------------------------------+
 # | | note timestamp                                                 |
 # | | fetch data from ccu to database                                |
@@ -623,4 +623,4 @@ while running.isrunning():
     influx.work()
 # | | wait for a reasonable time                                     |
 # +-+---------------------------+------------------------------------+
-    running.setrunning(False)
+    job.setrunning(False)
