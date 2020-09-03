@@ -36,6 +36,7 @@ import xml.dom.minidom
 import syslog
 import argparse
 import pycurl
+import os
 
 global dEbug
 global store
@@ -51,6 +52,7 @@ parser.add_argument('-R', '--Recreate',help='re-create tables',             defa
 parser.add_argument('-s', '--database',help='path to database',             default="/tmp/ccu.db")
 parser.add_argument('-u', '--ccu',     help='address of ccu',               default='http://ccu.example.com/')
 parser.add_argument('-v', '--verbose', help='be noisy (takes a number)',    default=0)
+parser.add_argument('-M', '--mockup',  help='mockup influxdb',              default=0)
 
 args = parser.parse_args()
 
@@ -62,20 +64,29 @@ store = args.database
 #############################################################################
 class send_to_influxdb:
     connection=""
-    def __init__(self,dbconnector):
-        self.connection = pycurl.Curl()
-        self.connection.setopt(self.connection.URL, dbconnector+"/write?db=homematic")
+    mockup = 0
+
+    def __init__(self,dbconnector,m):
+        global mockup
+        mockup = m
+        if mockup == 0:
+            self.connection = pycurl.Curl()
+            self.connection.setopt(self.connection.URL, dbconnector+"/write?db=homematic")
 
     def insert_record(self,string):
-        self.connection.setopt(self.connection.POSTFIELDS, str(string))
-        log.dprint("insert record " +str(string))
-        self.connection.perform()
+        global mockup
+        if mockup == 0:
+            self.connection.setopt(self.connection.POSTFIELDS, str(string))
+            log.dprint("insert record " +str(string))
+            self.connection.perform()
+        else:
+            print("insert to influx \"" + str(string) + "\"")
 
 #############################################################################
 class processdata:
     influx=""
-    def __init__(self,db):
-        self.influx = send_to_influxdb(db)
+    def __init__(self,db, mockup):
+        self.influx = send_to_influxdb(db, mockup)
 
 
     def work(self):
@@ -319,7 +330,10 @@ class storage:
     def commit(self):
         self.databaseconnection.commit()
 
-    def __init__(self, droptable):
+    def __init__(self, droptable, mock):
+        global store
+        if mock != 0:
+            store = store + str(os.getpid())
         self.databaseconnection = sqlite3.connect(store)
         log.dprint("connected to database "+ str(store))
         if droptable != 0:
@@ -579,10 +593,10 @@ log = logging("ccu to influxdb")
 # | check for another running instance                               |
 # | ---- and exit if found telling syslog about it                   |
 # | init database if needed                                          |
-db=storage(args.Recreate)
+db=storage(args.Recreate, args.mockup)
 # | setup ccureader and influxdb writer                              |
 ccu = readccuxml(args.ccu)
-influx = processdata(args.influxdb)
+influx = processdata(args.influxdb, args.mockup)
 # | setup timer system                                               |
 # +------------------------------------------------------------------|
 # | | while running                                                  |
