@@ -12,16 +12,10 @@
 # +------------------------------------------------------------------|
 # | | while running                                                  |
 # | +----------------------------------------------------------------+
-# | | daily update needed?                                           |
-# | +------yes------------------+------------------------------------+
-# | | fetch daily data from ccu |                                    |
-# | | store in database         |    %                               |
-# | | daily done                |                                    |
-# | +---------------------------+------------no----------------------+
-# | |                           | note timestamp                     |
-# | |       %                   | fetch data from ccu to database    |
-# | |                           | read databse and send to influxdb  |
-# | |                           | wait for a reasonable time         |
+# | | note timestamp                                                 |
+# | | fetch data from ccu to database                                |
+# | | read databse and send to influxdb                              |
+# | | wait for a reasonable time                                     |
 # +-+---------------------------+------------------------------------+
 
 import sys
@@ -59,6 +53,25 @@ args = parser.parse_args()
 dEbug = args.verbose
 dEbug = args.debug
 store = args.database
+#############################################################################
+
+#############################################################################
+class pidcheck:
+    global runme
+
+    def isrunning(self):
+        global runme
+        return runme
+
+    def setrunning(self,value):
+        global runme
+        runme = value
+        return
+
+    def __init__(self):
+        self.setrunning(True)
+        return
+
 #############################################################################
 
 #############################################################################
@@ -587,7 +600,6 @@ class readccuxml:
 #############################################################################
 #############################################################################
 
-global running
 # +------------------------------------------------------------------+
 # | setup syslog and say hello                                       |
 log = logging("ccu to influxdb")
@@ -601,20 +613,14 @@ influx = processdata(args.influxdb, args.mockup)
 # | setup timer system                                               |
 # +------------------------------------------------------------------|
 # | | while running                                                  |
-running = True
-while running:
+running = pidcheck()
+while running.isrunning():
 # | +----------------------------------------------------------------+
-# | | daily update needed?                                           |
-# | +------yes------------------+------------------------------------+
-# | | fetch daily data from ccu |                                    |
-# | | store in database         |    %                               |
-# | | daily done                |                                    |
-# | +---------------------------+------------no----------------------+
-# | |                           | note timestamp                     |
-# | |       %                   | fetch data from ccu to database    |
+# | | note timestamp                                                 |
+# | | fetch data from ccu to database                                |
     ccu.readout()
-# | |                           | read databse and send to influxdb  |
+# | | read databse and send to influxdb                              |
     influx.work()
-# | |                           | wait for a reasonable time         |
+# | | wait for a reasonable time                                     |
 # +-+---------------------------+------------------------------------+
-    running = False
+    running.setrunning(False)
