@@ -587,6 +587,7 @@ class readccuxml:
 #############################################################################
 #############################################################################
 
+global running
 # +------------------------------------------------------------------+
 # | setup syslog and say hello                                       |
 log = logging("ccu to influxdb")
@@ -600,6 +601,8 @@ influx = processdata(args.influxdb, args.mockup)
 # | setup timer system                                               |
 # +------------------------------------------------------------------|
 # | | while running                                                  |
+running = True
+while running:
 # | +----------------------------------------------------------------+
 # | | daily update needed?                                           |
 # | +------yes------------------+------------------------------------+
@@ -609,9 +612,9 @@ influx = processdata(args.influxdb, args.mockup)
 # | +---------------------------+------------no----------------------+
 # | |                           | note timestamp                     |
 # | |       %                   | fetch data from ccu to database    |
-ccu.readout()
+    ccu.readout()
 # | |                           | read databse and send to influxdb  |
-influx.work()
+    influx.work()
 # | |                           | wait for a reasonable time         |
 # +-+---------------------------+------------------------------------+
-
+    running = False
