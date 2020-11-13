@@ -341,7 +341,11 @@ class storage:
         return(self.databaseconnection.cursor())
 
     def commit(self):
-        self.databaseconnection.commit()
+        try:
+            self.databaseconnection.commit()
+        except sqlite3.OperationalError:
+            self.databaseconnection.rollback()
+            exit(1)
 
     def __init__(self, droptable, mock):
         global store
@@ -619,7 +623,7 @@ while job.isrunning():
 # | | note timestamp                                                 |
 # | | fetch data from ccu to database                                |
     ccu.readout()
-# | | read databse and send to influxdb                              |
+# | | read database and send to influxdb                             |
     influx.work()
 # | | wait for a reasonable time                                     |
 # +-+---------------------------+------------------------------------+
