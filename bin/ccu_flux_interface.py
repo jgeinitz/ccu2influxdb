@@ -566,7 +566,11 @@ class readccuxml:
             print(e.args)
             print("open error ")
             exit(1)
-        dom = xml.dom.minidom.parseString(remot.data)
+        try:
+            dom = xml.dom.minidom.parseString(remot.data)
+        except Exception as e:
+            print("xml error in statelist" + str(e.args))
+            exit(1)
         log.dprint("updating internal database")
         for statelist in dom.childNodes:
             for device in statelist.childNodes:
@@ -578,7 +582,12 @@ class readccuxml:
             print(e.args)
             print("open error for devicelist.xml")
             exit(1)
-        dom = xml.dom.minidom.parseString(remot.data)
+        try:
+            dom = xml.dom.minidom.parseString(remot.data)
+        except Exception as e:
+            print("xml error in devicelist" + str(e.args))
+            exit(1)
+
         for devicelist in dom.childNodes:
             for l in devicelist.childNodes:
                 self.readdeviceinfo(l)
@@ -588,7 +597,11 @@ class readccuxml:
         except:
             print("open error for rssilist.xml")
             exit(1)
-        dom = xml.dom.minidom.parseString(remot.data)
+        try:
+            dom = xml.dom.minidom.parseString(remot.data)
+        except Exception as e:
+            print("xml error in rssilist" + str(e.args))
+            exit(1)
         for rssilist in dom.childNodes:
             for list in rssilist.childNodes:
                 self.readrssidevice(list)
