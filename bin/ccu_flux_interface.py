@@ -209,9 +209,9 @@ class logging:
     global dEbug
 
     def __init__(self,myname):
-        syslog.openlog(logoption=syslog.LOG_PID,
+        syslog.openlog("ccu2influx",logoption=syslog.LOG_PID,
                        facility=syslog.LOG_DAEMON)
-        self.iprint(myname + " starting")
+        #self.iprint(myname + " starting")
 
     def iprint(self,text):
         syslog.syslog(syslog.LOG_INFO, text)
