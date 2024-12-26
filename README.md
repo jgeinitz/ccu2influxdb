@@ -8,4 +8,4 @@ It does this by reading three xml-files
 - rssilist.xml
 
 These files are consolidated inside an sqlite db and then converted to influxdb lines.
-x
+
